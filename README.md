@@ -1,1 +1,1 @@
-# nodejs-proxy-crawler-incloak
+# Proxy list crawler for https://incloak.com/proxy-list/

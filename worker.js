@@ -1,9 +1,13 @@
+var configuration = require('./configuration');
 var phantom = require('node-phantom');
 module.exports = function (queueClient) {
     var self = this;
     self.queueClient = queueClient;
     this.uri = 'http://incloak.com/proxy-list/';
     this.start = function () {
+        setInterval(this.iterate, configuration.interval);
+    };
+    this.iterate = function () {
         // To make this work:
         // "Changed window.location.hostname to window.location.host in node-phantom.js file." (c)
         // As given at: http://stackoverflow.com/questions/31998719/phantomjs-error-on-basic-tests
@@ -23,6 +27,20 @@ module.exports = function (queueClient) {
                         return;
                     }
                     page.evaluate(function () {
+                        function _normalizeType(type) {
+                            if ('HTTP' == type) {
+                                return 1;
+                            } else if ('HTTPS' == type) {
+                                return 2;
+                            } else if ('SOCKS4' == type) {
+                                return 3;
+                            } else if ('SOCKS5' == type) {
+                                return 4;
+                            } else {
+                                return undefined;
+                            }
+                        }
+
                         var rows = [];
                         // There is a table containing rows with all necessary data
                         $('.proxy__t tr').each(function () {
@@ -88,22 +106,42 @@ module.exports = function (queueClient) {
                                         break;
                                     }
                                     // Type
-                                    // TODO: Parse this value
                                     case 4:
                                     {
-                                        proxy.type = 1;
+                                        var typesString = $(this)
+                                            .text()
+                                            .trim();
+                                        if (typesString) {
+                                            var types = typesString.split(', ');
+                                            if (types) {
+                                                if (0 < types.length) {
+                                                    var type = types[types.length - 1];
+                                                    proxy.type = _normalizeType(type);
+                                                }
+                                            }
+                                        }
                                         break;
                                     }
                                     // Anonymity
-                                    // TODO: Parse this value
                                     case 5:
                                     {
+                                        var anonimity = $(this)
+                                            .text()
+                                            .trim();
+                                        if (anonimity) {
+                                            proxy.metadata.anonimity = anonimity;
+                                        }
                                         break;
                                     }
                                     // Last check
-                                    // TODO: Parse this value
                                     case 6:
                                     {
+                                        var lastCheck = $(this)
+                                            .text()
+                                            .trim();
+                                        if (lastCheck) {
+                                            proxy.metadata.lastCheck = lastCheck;
+                                        }
                                         break;
                                     }
                                 }
