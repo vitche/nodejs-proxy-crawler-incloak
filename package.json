@@ -1,0 +1,12 @@
+{
+    "name": "nodejs-proxy-crawler-incloak",
+    "version": "0.0.0",
+    "private": true,
+    "scripts": {
+        "start": "node ./bin/www"
+    },
+    "dependencies": {
+        "node-phantom": "~0.2.5",
+        "nodejs-proxy-queue-client": "git+https://github.com/vitche/nodejs-proxy-queueClient-client.git"
+    }
+}

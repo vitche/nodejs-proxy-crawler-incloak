@@ -1,0 +1,18 @@
+#!/usr/bin/env node
+var workerClass = require('../worker');
+var proxyQueueClient = require('nodejs-proxy-queue-client');
+// Connect to the proxy queueClient
+var queueClient = new proxyQueueClient();
+queueClient.connected = false;
+queueClient.connect(function (error) {
+    if (undefined != error) {
+        console.log(error);
+        return;
+    }
+    if (!queueClient.connected) {
+        // Create one worker
+        var worker = new workerClass(queueClient);
+        worker.start();
+        queueClient.connected = true;
+    }
+});
