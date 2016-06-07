@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// Debug mode for messages
+// process.env['DEBUG'] = '*';
 var workerClass = require('../worker');
 var proxyQueueClient = require('nodejs-proxy-queue-client');
 // Connect to the proxy queueClient

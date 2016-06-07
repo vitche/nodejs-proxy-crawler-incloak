@@ -1,13 +1,21 @@
 var configuration = require('./configuration');
 var phantom = require('node-phantom');
+var objectHash = require('object-hash');
+var memoryCache = require('memory-cache');
 module.exports = function (queueClient) {
     var self = this;
     self.queueClient = queueClient;
+    self.processing = false;
     this.uri = 'http://incloak.com/proxy-list/';
     this.start = function () {
         setInterval(this.iterate, configuration.interval);
     };
     this.iterate = function () {
+        if (self.processing) {
+            console.log('Previous flow running. Will skip activation.');
+            return false;
+        }
+        self.processing = true;
         // To make this work:
         // "Changed window.location.hostname to window.location.host in node-phantom.js file." (c)
         // As given at: http://stackoverflow.com/questions/31998719/phantomjs-error-on-basic-tests
@@ -63,9 +71,10 @@ module.exports = function (queueClient) {
                                     // Port
                                     case 1:
                                     {
-                                        proxy.port = $(this)
+                                        var port = $(this)
                                             .text()
                                             .trim();
+                                        proxy.port = parseInt(port);
                                         break;
                                     }
                                     // Country, City
@@ -146,6 +155,8 @@ module.exports = function (queueClient) {
                                     }
                                 }
                             });
+                            // TODO: Add this to the database schema to make it processable
+                            delete proxy.metadata;
                             rows.push(proxy);
                         });
                         return rows;
@@ -156,9 +167,19 @@ module.exports = function (queueClient) {
                         }
                         for (var i = 0; i < proxies.length; i++) {
                             var proxy = proxies[i];
-                            console.log(proxy);
-                            self.queueClient.proxy.add.publish(proxy);
+                            var hash = objectHash(proxy);
+                            if (!memoryCache.get(hash)) {
+                                memoryCache.put(hash, true, configuration.cacheTimeToLive);
+                                console.log(proxy);
+                                self.queueClient.proxy.add.publish(proxy);
+                            } else {
+                                console.log(hash + ' already processed');
+                            }
                         }
+                        // Exit Phantom.js
+                        phantomInstance.exit();
+                        // Notify processing finished
+                        self.processing = false;
                     });
                 });
             });
