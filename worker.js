@@ -134,11 +134,11 @@ module.exports = function (queueClient) {
                                     // Anonymity
                                     case 5:
                                     {
-                                        var anonimity = $(this)
+                                        var anonymity = $(this)
                                             .text()
                                             .trim();
-                                        if (anonimity) {
-                                            proxy.metadata.anonimity = anonimity;
+                                        if (anonymity) {
+                                            proxy.metadata.anonymity = anonymity;
                                         }
                                         break;
                                     }
@@ -155,8 +155,6 @@ module.exports = function (queueClient) {
                                     }
                                 }
                             });
-                            // TODO: Add this to the database schema to make it processable
-                            delete proxy.metadata;
                             rows.push(proxy);
                         });
                         return rows;
@@ -167,6 +165,9 @@ module.exports = function (queueClient) {
                         }
                         for (var i = 0; i < proxies.length; i++) {
                             var proxy = proxies[i];
+                            if (!self.validate(proxy)) {
+                                continue;
+                            }
                             var hash = objectHash(proxy);
                             if (!memoryCache.get(hash)) {
                                 memoryCache.put(hash, true, configuration.cacheTimeToLive);
@@ -184,6 +185,9 @@ module.exports = function (queueClient) {
                 });
             });
         });
+    };
+    this.validate = function (proxy) {
+        return (proxy.ipv4 || proxy.ipv6) && proxy.port && proxy.type;
     };
     return this;
 };
