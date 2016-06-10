@@ -17,16 +17,19 @@ module.exports = function (queueClient) {
         }
         self.processing = true;
         phantom.create(function (error, phantomInstance) {
+            console.log('Created Phantom.js instance');
             if (undefined != error) {
                 console.log(error);
                 return;
             }
             return phantomInstance.createPage(function (error, page) {
+                console.log('Created page');
                 if (undefined != error) {
                     console.log(error);
                     return;
                 }
                 return page.open(self.uri, function (error, status) {
+                    console.log('Opened page ' + self.uri);
                     if (undefined != error) {
                         console.log(error);
                         return;
@@ -156,6 +159,7 @@ module.exports = function (queueClient) {
                         });
                         return rows;
                     }, function (error, proxies) {
+                        console.log('Received extracted content');
                         if (undefined != error) {
                             console.log(error);
                             return;
