@@ -16,9 +16,6 @@ module.exports = function (queueClient) {
             return false;
         }
         self.processing = true;
-        // To make this work:
-        // "Changed window.location.hostname to window.location.host in node-phantom.js file." (c)
-        // As given at: http://stackoverflow.com/questions/31998719/phantomjs-error-on-basic-tests
         phantom.create(function (error, phantomInstance) {
             if (undefined != error) {
                 console.log(error);
