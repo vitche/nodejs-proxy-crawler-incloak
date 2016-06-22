@@ -160,28 +160,37 @@ module.exports = function (queueClient) {
                         return rows;
                     }, function (error, proxies) {
                         console.log('Received extracted content');
-                        if (undefined != error) {
-                            console.log(error);
-                            return;
-                        }
-                        for (var i = 0; i < proxies.length; i++) {
-                            var proxy = proxies[i];
-                            if (!self.validate(proxy)) {
-                                continue;
+                        try {
+                            if (undefined != error) {
+                                console.log(error);
+                                return;
                             }
-                            var hash = objectHash(proxy);
-                            if (!memoryCache.get(hash)) {
-                                memoryCache.put(hash, true, configuration.cacheTimeToLive);
-                                console.log(proxy);
-                                self.queueClient.proxy.add.publish(proxy);
-                            } else {
-                                console.log(hash + ' already processed');
+                            if (!proxies) {
+                                // This happens when the Web socket connection to Phantom.js is broken.
+                                // Web socket errors are not handled internally and "null" is sent as data.
+                                console.log(new Error('Null data received'));
+                                return;
                             }
+                            for (var i = 0; i < proxies.length; i++) {
+                                var proxy = proxies[i];
+                                if (!self.validate(proxy)) {
+                                    continue;
+                                }
+                                var hash = objectHash(proxy);
+                                if (!memoryCache.get(hash)) {
+                                    memoryCache.put(hash, true, configuration.cacheTimeToLive);
+                                    console.log(proxy);
+                                    self.queueClient.proxy.add.publish(proxy);
+                                } else {
+                                    console.log(hash + ' already processed');
+                                }
+                            }
+                        } finally {
+                            // Exit Phantom.js
+                            phantomInstance.exit();
+                            // Notify processing finished
+                            self.processing = false;
                         }
-                        // Exit Phantom.js
-                        phantomInstance.exit();
-                        // Notify processing finished
-                        self.processing = false;
                     });
                 });
             });
