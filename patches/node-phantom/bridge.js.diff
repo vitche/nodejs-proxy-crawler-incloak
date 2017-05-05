@@ -1,0 +1,11 @@
+--- bridge.js	2017-04-16 23:10:03.460650100 +0300
++++ bridge.patched.js	2017-04-16 23:16:18.851657000 +0300
+@@ -1,6 +1,7 @@
+ //Released to the public domain.
+ 
+-var port=phantom.args[0];
++var system = require('system');
++var port = system.args[1];
+ var webpage=require('webpage');
+ var controlpage=webpage.create();
+ 

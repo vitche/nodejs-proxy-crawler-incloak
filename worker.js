@@ -53,24 +53,21 @@ module.exports = function (queueClient) {
                         // There is a table containing rows with all necessary data
                         $('.proxy__t tr').each(function () {
                             var proxy = {
-                                metadata: {
-                                }
+                                metadata: {}
                             };
                             var i = 0;
                             $(this).find('td').each(function () {
                                 // Each row contains some columns with data
                                 switch (i++) {
                                     // IP address
-                                    case 0:
-                                    {
+                                    case 0: {
                                         proxy.ipv4 = $(this)
                                             .text()
                                             .trim();
                                         break;
                                     }
                                     // Port
-                                    case 1:
-                                    {
+                                    case 1: {
                                         var port = $(this)
                                             .text()
                                             .trim();
@@ -78,8 +75,7 @@ module.exports = function (queueClient) {
                                         break;
                                     }
                                     // Country, City
-                                    case 2:
-                                    {
+                                    case 2: {
                                         // The first text node contains country
                                         var country = $(this)
                                             .find('div')
@@ -103,8 +99,7 @@ module.exports = function (queueClient) {
                                         break;
                                     }
                                     // Speed
-                                    case 3:
-                                    {
+                                    case 3: {
                                         var speed = $(this)
                                             .find('.bar .n-bar-wrapper p')
                                             .text()
@@ -115,8 +110,7 @@ module.exports = function (queueClient) {
                                         break;
                                     }
                                     // Type
-                                    case 4:
-                                    {
+                                    case 4: {
                                         var typesString = $(this)
                                             .text()
                                             .trim();
@@ -132,8 +126,7 @@ module.exports = function (queueClient) {
                                         break;
                                     }
                                     // Anonymity
-                                    case 5:
-                                    {
+                                    case 5: {
                                         var anonymity = $(this)
                                             .text()
                                             .trim();
@@ -143,8 +136,7 @@ module.exports = function (queueClient) {
                                         break;
                                     }
                                     // Last check
-                                    case 6:
-                                    {
+                                    case 6: {
                                         var lastCheck = $(this)
                                             .text()
                                             .trim();
