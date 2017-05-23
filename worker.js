@@ -22,6 +22,12 @@ module.exports = function (queueClient) {
                 console.log(error);
                 return;
             }
+            // Exit Phantom.js by timeout
+            self.activationTimer = setTimeout(function () {
+                phantomInstance.exit();
+                delete self.activationTimer;
+                self.processing = false;
+            }, 60000);
             return phantomInstance.createPage(function (error, page) {
                 console.log('Created page');
                 if (undefined != error) {
@@ -180,6 +186,10 @@ module.exports = function (queueClient) {
                         } finally {
                             // Exit Phantom.js
                             phantomInstance.exit();
+                            if (self.activationTimer) {
+                                clearTimeout(self.activationTimer);
+                                delete self.activationTimer;
+                            }
                             // Notify processing finished
                             self.processing = false;
                         }
