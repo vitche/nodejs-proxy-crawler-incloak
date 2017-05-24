@@ -16,18 +16,33 @@ module.exports = function (queueClient) {
             return false;
         }
         self.processing = true;
+        console.log('Will create Phantom.js instance');
+        self.phantomInstanceSpawnTimer = setTimeout(function () {
+            console.log('Phantom.js instance spawn time-out, a possible crash');
+            self.processing = false;
+        }, 4 * configuration.interval);
         phantom.create(function (error, phantomInstance) {
             console.log('Created Phantom.js instance');
+            clearTimeout(self.phantomInstanceSpawnTimer);
+            delete self.phantomInstanceSpawnTimer;
+            var terminatePhantomInstance = function () {
+                if (phantomInstance) {
+                    phantomInstance.exit();
+                }
+                delete self.phantomInstanceConnectionTimer;
+                self.processing = false;
+            };
             if (undefined != error) {
                 console.log(error);
+                console.log('Will terminate Phantom.js instance due to error');
+                terminatePhantomInstance();
                 return;
             }
             // Exit Phantom.js by timeout
-            self.activationTimer = setTimeout(function () {
-                phantomInstance.exit();
-                delete self.activationTimer;
-                self.processing = false;
-            }, 60000);
+            self.phantomInstanceConnectionTimer = setTimeout(function () {
+                console.log('Will terminate Phantom.js instance due to time-out');
+                terminatePhantomInstance();
+            }, 2 * configuration.interval);
             return phantomInstance.createPage(function (error, page) {
                 console.log('Created page');
                 if (undefined != error) {
@@ -186,9 +201,9 @@ module.exports = function (queueClient) {
                         } finally {
                             // Exit Phantom.js
                             phantomInstance.exit();
-                            if (self.activationTimer) {
-                                clearTimeout(self.activationTimer);
-                                delete self.activationTimer;
+                            if (self.phantomInstanceConnectionTimer) {
+                                clearTimeout(self.phantomInstanceConnectionTimer);
+                                delete self.phantomInstanceConnectionTimer;
                             }
                             // Notify processing finished
                             self.processing = false;
